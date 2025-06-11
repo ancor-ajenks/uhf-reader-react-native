@@ -14,6 +14,7 @@ type initializeUHFType = () => Promise<any>;
 type changePower = (powerValue: any) => Promise<any>;
 type AddListener = (cb: (args: any[]) => void) => void;
 type clearTags = () => void;
+type findTagType = (targetEPC: string, callback: (success: boolean) => void) => void;
 
 
 const playSoundFunc: playSoundTy = (number:1|2) =>
@@ -55,6 +56,9 @@ const initializeUHF:initializeUHFType = () =>  C72RfidScanner.initializeUHF();
 
 const deinitializeUHF = () =>  C72RfidScanner.deinitializeUHF();
 
+const findTag: findTagType = (targetEPC: string, callback: (success: boolean) => void) =>
+  C72RfidScanner.findTag(targetEPC, callback);
+
 export default {
   releaseSoundPool,
   playSoundFunc,
@@ -70,4 +74,5 @@ export default {
   changePower,
   deInitializeReader,
   clearTags,
+  findTag,
 };
