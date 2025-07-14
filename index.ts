@@ -59,6 +59,11 @@ const deinitializeUHF = () =>  C72RfidScanner.deinitializeUHF();
 const findTag: findTagType = (targetEPC: string, callback: (success: boolean) => void) =>
   C72RfidScanner.findTag(targetEPC, callback);
 
+const removeAllListeners = () => {
+  eventEmitter.removeAllListeners("UHF_POWER");
+  eventEmitter.removeAllListeners("UHF_TAG");
+};
+
 export default {
   releaseSoundPool,
   playSoundFunc,
@@ -75,4 +80,5 @@ export default {
   deInitializeReader,
   clearTags,
   findTag,
+  removeAllListeners
 };
