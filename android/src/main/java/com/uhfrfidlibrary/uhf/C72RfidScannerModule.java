@@ -1,4 +1,5 @@
 package com.uhfrfidlibrary.uhf;
+
 import android.util.Log;
 import androidx.annotation.Nullable;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -29,9 +30,6 @@ import android.os.Bundle;
 import com.facebook.react.ReactActivity;
 import androidx.fragment.app.Fragment;
 
-
-
-
 public class C72RfidScannerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
     private static final String UHF_READER_POWER_ON_ERROR = "UHF_READER_POWER_ON_ERROR";
@@ -40,7 +38,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
     private static final String UHF_READER_RELEASE_ERROR = "UHF_READER_RELEASE_ERROR";
     private static final String UHF_READER_WRITE_ERROR = "UHF_READER_WRITE_ERROR";
     private static final String UHF_READER_OTHER_ERROR = "UHF_READER_OTHER_ERROR";
-    
+
     public RFIDWithUHFUART mReader;
 
     private Boolean mReaderStatus = false;
@@ -51,7 +49,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
     private AudioManager am;
     private HashMap<Integer, Integer> soundMap = new HashMap<>();
     private float volumnRatio;
-    
+
     private final ReactApplicationContext reactContext;
 
     public C72RfidScannerModule(ReactApplicationContext reactContext) {
@@ -61,7 +59,6 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         initSound(reactContext);
     }
 
-
     // =========================
     // Method to initialize UHF from React Native
 
@@ -69,7 +66,16 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
     public String getName() {
         return "C72RfidScanner";
     }
-    
+
+    @ReactMethod
+    public void getInventoryStatus(final Promise promise) {
+        if (mReader == null) {
+            promise.resolve(false);
+            return;
+        }
+        promise.resolve(uhfInventoryStatus);
+    }
+
     @ReactMethod
     public void playSound(int id) {
         float audioMaxVolume = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -96,6 +102,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         soundMap.put(2, soundPool.load(context, R.raw.serror, 1));
         am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     }
+
     @ReactMethod
     public void initializeUHF(Promise promise) {
         try {
@@ -104,10 +111,10 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
             // mReader.setEPCAndTIDMode();
             initSound(reactContext);
             promise.resolve("UHF Initialized");
-            // if (mReader != null && mReader.init()) {  // Initialize the UHF scanner
-            //     promise.resolve("UHF Initialized");
+            // if (mReader != null && mReader.init()) { // Initialize the UHF scanner
+            // promise.resolve("UHF Initialized");
             // } else {
-            //     promise.reject("UHF_INIT_ERROR", "Failed to initialize UHF");
+            // promise.reject("UHF_INIT_ERROR", "Failed to initialize UHF");
             // }
         } catch (Exception e) {
             promise.reject("UHF_INIT_ERROR", e.getMessage());
@@ -118,17 +125,18 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
     @ReactMethod
     public void deinitializeUHF(Promise promise) {
         try {
-            mReader.free();  // Deinitialize the UHF scanner
+            mReader.free(); // Deinitialize the UHF scanner
             promise.resolve("UHF Deinitialized");
         } catch (Exception e) {
             promise.reject("UHF_DEINIT_ERROR", e.getMessage());
         }
     }
+
     @ReactMethod
     public void readPower(final Promise promise) {
         try {
             int uhfPower = mReader.getPower();
-            if(uhfPower>=0) {
+            if (uhfPower >= 0) {
                 promise.resolve(uhfPower);
             } else {
                 promise.reject(UHF_READER_OTHER_ERROR, "INVALID POWER VALUE");
@@ -143,17 +151,18 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void changePower(int powerValue, final Promise promise) {
-        if(mReader!=null){
-        try {
-            Boolean uhfPowerState = mReader.setPower(powerValue);
-            if(uhfPowerState) promise.resolve(uhfPowerState);
-            else promise.reject(UHF_READER_OTHER_ERROR, "Can't Change Power");
-        } catch (Exception ex) {
-            promise.reject(UHF_READER_OTHER_ERROR, ex.getLocalizedMessage());
-         }
+        if (mReader != null) {
+            try {
+                Boolean uhfPowerState = mReader.setPower(powerValue);
+                if (uhfPowerState)
+                    promise.resolve(uhfPowerState);
+                else
+                    promise.reject(UHF_READER_OTHER_ERROR, "Can't Change Power");
+            } catch (Exception ex) {
+                promise.reject(UHF_READER_OTHER_ERROR, ex.getLocalizedMessage());
+            }
         }
     }
-
 
     // =========================== END
 
@@ -176,16 +185,15 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
 
     private void sendEvent(String eventName, @Nullable WritableArray array) {
         getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(eventName, array);
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, array);
     }
 
     private void sendEvent(String eventName, @Nullable String status) {
         getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(eventName, status);
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, status);
     }
-    
 
     @ReactMethod
     private void initializeReader() {
@@ -201,7 +209,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
 
     public static WritableArray convertArrayToWritableArray(String[] tag) {
         WritableArray array = new WritableNativeArray();
-        for(String tagId: tag) {
+        for (String tagId : tag) {
             array.pushString(tagId);
         }
         return array;
@@ -212,10 +220,10 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         try {
             UHFTAGInfo tag = mReader.inventorySingleTag();
 
-            if(!tag.getEPC().isEmpty()) {
-                String[] tagData = {tag.getEPC(), tag.getRssi()};
+            if (!tag.getEPC().isEmpty()) {
+                String[] tagData = { tag.getEPC(), tag.getRssi() };
                 promise.resolve(convertArrayToWritableArray(tagData));
-               
+
             } else {
                 promise.reject(UHF_READER_READ_ERROR, "READ FAILED");
             }
@@ -240,22 +248,22 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void writeDataIntoEpc(String epc, final Promise promise) {
-        if(epc.length() == (6*4) ) {
-        epc += "00000000";
-        // Access Password, Bank Enum (EPC(1), TID(2),...), Pointer, Count, Data
-        //Boolean uhfWriteState = mReader.writeData_Ex("00000000", BankEnum.valueOf("UII"), 2, 6, epc);
+        if (epc.length() == (6 * 4)) {
+            epc += "00000000";
+            // Access Password, Bank Enum (EPC(1), TID(2),...), Pointer, Count, Data
+            // Boolean uhfWriteState = mReader.writeData_Ex("00000000",
+            // BankEnum.valueOf("UII"), 2, 6, epc);
 
             Boolean uhfWriteState = mReader.writeData("00000000", IUHF.Bank_EPC, 2, 6, epc);
 
-            if(uhfWriteState)
-            promise.resolve(uhfWriteState);
-        else
-            promise.reject(UHF_READER_WRITE_ERROR, "Can't Write Data");
+            if (uhfWriteState)
+                promise.resolve(uhfWriteState);
+            else
+                promise.reject(UHF_READER_WRITE_ERROR, "Can't Write Data");
+        } else {
+            promise.reject(UHF_READER_WRITE_ERROR, "Invalid Data");
         }
-        else {
-        promise.reject(UHF_READER_WRITE_ERROR, "Invalid Data"); 
-        }
-    } 
+    }
 
     @ReactMethod
     public void clearAllTags() {
@@ -264,7 +272,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
 
     class UhfReaderPower extends Thread {
         Boolean powerOn;
-        
+
         public UhfReaderPower() {
             this.powerOn = true;
         }
@@ -274,12 +282,12 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         }
 
         public void powerOn() {
-            if(mReader == null || !mReaderStatus) {
+            if (mReader == null || !mReaderStatus) {
                 try {
                     mReader = RFIDWithUHFUART.getInstance();
                     try {
                         mReaderStatus = mReader.init();
-                        //mReader.setEPCTIDMode(true);
+                        // mReader.setEPCTIDMode(true);
                         mReader.setEPCAndTIDMode();
                         sendEvent("UHF_POWER", "success: power on");
                     } catch (Exception ex) {
@@ -292,7 +300,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         }
 
         public void powerOff() {
-            if(mReader != null) {
+            if (mReader != null) {
                 try {
                     mReader.free();
                     mReader = null;
@@ -305,17 +313,13 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         }
 
         public void run() {
-            if(powerOn) {
+            if (powerOn) {
                 powerOn();
             } else {
                 powerOff();
             }
         }
     }
-
-
-
-    
 
     @ReactMethod
     public void findTag(final String findEpc, final Callback callback) {
@@ -327,9 +331,11 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
     class TagThread extends Thread {
 
         String findEpc;
+
         public TagThread() {
             findEpc = "";
         }
+
         public TagThread(String findEpc) {
             this.findEpc = findEpc;
         }
@@ -341,7 +347,7 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
             while (uhfInventoryStatus) {
                 res = mReader.readTagFromBuffer();
                 if (res != null) {
-                    if("".equals(findEpc))
+                    if ("".equals(findEpc))
                         addIfNotExists(res);
                     else
                         lostTagOnly(res);
@@ -350,23 +356,22 @@ public class C72RfidScannerModule extends ReactContextBaseJavaModule implements 
         }
 
         public void lostTagOnly(UHFTAGInfo tag) {
-            String epc = tag.getEPC(); //mReader.convertUiiToEPC(tag[1]);
-            if(epc.equals(findEpc)) {
+            String epc = tag.getEPC(); // mReader.convertUiiToEPC(tag[1]);
+            if (epc.equals(findEpc)) {
                 // Same Tag Found
-                //tag[1] = mReader.convertUiiToEPC(tag[1]);
-                String[] tagData = {tag.getEPC(), tag.getRssi()};
+                // tag[1] = mReader.convertUiiToEPC(tag[1]);
+                String[] tagData = { tag.getEPC(), tag.getRssi() };
                 sendEvent("UHF_TAG", C72RfidScannerModule.convertArrayToWritableArray(tagData));
             }
         }
 
         public void addIfNotExists(UHFTAGInfo tid) {
-            if(!scannedTags.contains(tid.getEPC())) {
+            if (!scannedTags.contains(tid.getEPC())) {
                 scannedTags.add(tid.getEPC());
-                String[] tagData = {tid.getEPC(), tid.getRssi()};
+                String[] tagData = { tid.getEPC(), tid.getRssi() };
                 sendEvent("UHF_TAG", C72RfidScannerModule.convertArrayToWritableArray(tagData));
             }
         }
     }
-
 
 }

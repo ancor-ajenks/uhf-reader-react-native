@@ -15,7 +15,7 @@ type changePower = (powerValue: any) => Promise<any>;
 type AddListener = (cb: (args: any[]) => void) => void;
 type clearTags = () => void;
 type findTagType = (targetEPC: string, callback: (success: boolean) => void) => void;
-
+type getInventoryStatusType = () => Promise<boolean>;
 
 const playSoundFunc: playSoundTy = (number:1|2) =>
   C72RfidScanner.playSound(number);
@@ -64,6 +64,9 @@ const removeAllListeners = () => {
   eventEmitter.removeAllListeners("UHF_TAG");
 };
 
+const getInventoryStatus: getInventoryStatusType = () =>
+  C72RfidScanner.getInventoryStatus();
+
 export default {
   releaseSoundPool,
   playSoundFunc,
@@ -80,5 +83,6 @@ export default {
   deInitializeReader,
   clearTags,
   findTag,
+  getInventoryStatus,
   removeAllListeners
 };
